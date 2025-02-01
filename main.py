@@ -8,6 +8,7 @@ import base64
 import uvicorn
 from pydantic import BaseModel
 from typing import Optional
+from soil_management import SoilData, analyze_soil_health
 
 app = FastAPI()
 
@@ -142,6 +143,14 @@ async def predict_base64(request: ImageRequest):
             "success": False,
             "error": f"Unexpected error: {str(e)}"
         }
+
+@app.post("/analyze_soil")
+async def analyze_soil(data: SoilData):
+    try:
+        result = analyze_soil_health(data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
 async def health_check():
