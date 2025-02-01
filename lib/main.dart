@@ -6,6 +6,8 @@ void main() {
 }
 
 class AgricultureApp extends StatelessWidget {
+  const AgricultureApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

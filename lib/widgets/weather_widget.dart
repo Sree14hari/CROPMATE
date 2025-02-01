@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class WeatherWidget extends StatefulWidget {
+  const WeatherWidget({super.key});
+
   @override
   _WeatherWidgetState createState() => _WeatherWidgetState();
 }
@@ -51,7 +53,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Center(child: CircularProgressIndicator()),
@@ -59,7 +61,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     }
 
     if (error != null) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Column(
@@ -81,7 +83,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         weatherData!['main'] == null ||
         weatherData!['weather'] == null ||
         (weatherData!['weather'] as List).isEmpty) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Column(

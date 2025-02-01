@@ -6,6 +6,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CropSelectionScreen extends StatefulWidget {
+  const CropSelectionScreen({super.key});
+
   @override
   _CropSelectionScreenState createState() => _CropSelectionScreenState();
 }
@@ -17,6 +19,14 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
   String? _season;
   Map<String, dynamic>? _confidenceScores;
   String? _error;
+  String? _selectedSoilType;
+
+  Map<String, List<String>> soilToCrops = {
+    'Clay': ['Rice', 'Wheat', 'Cabbage', 'Broccoli'],
+    'Sandy': ['Carrots', 'Potatoes', 'Peanuts', 'Watermelon'],
+    'Loamy': ['Corn', 'Tomatoes', 'Soybeans', 'Cotton'],
+    'Silty': ['Vegetables', 'Roses', 'Tulips', 'Bamboo'],
+  };
 
   @override
   void initState() {
@@ -89,208 +99,363 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
     }
   }
 
+  void _updateCropSuggestions() {
+    if (_selectedSoilType == null) return;
+
+    List<String> soilBasedCrops = soilToCrops[_selectedSoilType!] ?? [];
+    Map<String, double> scores = {};
+
+    // Calculate confidence scores based on weather conditions and soil type
+    for (String crop in soilBasedCrops) {
+      double score = 0.0;
+
+      // Temperature factor
+      double tempC =
+          double.tryParse(_weatherData!['temperature'].toString()) ?? 0;
+      if (tempC >= 20 && tempC <= 30) {
+        score += 40;
+      } else if (tempC >= 15 && tempC <= 35) {
+        score += 20;
+      }
+
+      // Humidity factor
+      double humidity =
+          double.tryParse(_weatherData!['humidity'].toString()) ?? 0;
+      if (humidity >= 40 && humidity <= 70) {
+        score += 40;
+      } else if (humidity >= 30 && humidity <= 80) {
+        score += 20;
+      }
+
+      // Season factor
+      if (_season == 'Summer' &&
+          ['Watermelon', 'Tomatoes', 'Cotton'].contains(crop)) {
+        score += 20;
+      } else if (_season == 'Winter' &&
+          ['Wheat', 'Cabbage', 'Broccoli'].contains(crop)) {
+        score += 20;
+      }
+
+      scores[crop] = score;
+    }
+
+    // Sort crops by confidence score
+    var sortedCrops = scores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    setState(() {
+      _suitableCrops = sortedCrops.take(3).map((e) => e.key).toList();
+      _confidenceScores = Map.fromEntries(sortedCrops.take(3));
+    });
+  }
+
   Widget _buildWeatherInfo() {
     if (_weatherData == null) return SizedBox.shrink();
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.all(16),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade400, Colors.blue.shade700],
-          ),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.blue[400]!,
+            Colors.blue[300]!,
+          ],
         ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Current Weather',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Weather Conditions',
+                    style: TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
-                    ),
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _weatherInfoItem(
-                    Icons.thermostat,
-                    '${_weatherData!['temperature'].toStringAsFixed(1)}°C',
-                    'Temperature',
-                    Colors.white,
-                  ),
-                  _weatherInfoItem(
-                    Icons.water_drop,
-                    '${_weatherData!['humidity']}%',
-                    'Humidity',
-                    Colors.white,
-                  ),
-                  _weatherInfoItem(
-                    Icons.umbrella,
-                    '${_weatherData!['rainfall'].toStringAsFixed(1)}mm',
-                    'Rainfall',
-                    Colors.white,
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _weatherInfoItem(
-                    Icons.air,
-                    '${_weatherData!['wind_speed']?.toStringAsFixed(1) ?? 'N/A'} km/h',
-                    'Wind Speed',
-                    Colors.white,
-                  ),
-                  _weatherInfoItem(
-                    Icons.wb_sunny,
-                    '${_weatherData!['uv_index']?.toString() ?? 'N/A'}',
-                    'UV Index',
-                    Colors.white,
-                  ),
-                  _weatherInfoItem(
-                    Icons.compress,
-                    '${_weatherData!['pressure']?.toString() ?? 'N/A'} hPa',
-                    'Pressure',
-                    Colors.white,
-                  ),
-                ],
-              ),
-              Divider(color: Colors.white.withOpacity(0.5), height: 32),
-              Text(
-                'Weather: ${_weatherData!['description']}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                     ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    _season ?? '',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
               ),
-              if (_season != null) ...[
-                SizedBox(height: 8),
-                Text(
-                  'Season: $_season',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                ),
-              ],
+              Icon(
+                Icons.wb_sunny,
+                color: Colors.white,
+                size: 40,
+              ),
             ],
           ),
-        ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildWeatherDetail(
+                icon: Icons.thermostat,
+                value: '${_weatherData!['temperature']}°C',
+                label: 'Temperature',
+              ),
+              _buildWeatherDetail(
+                icon: Icons.water_drop,
+                value: '${_weatherData!['humidity']}%',
+                label: 'Humidity',
+              ),
+              _buildWeatherDetail(
+                icon: Icons.air,
+                value: '${_weatherData!['windSpeed']} km/h',
+                label: 'Wind',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _weatherInfoItem(
-      IconData icon, String value, String label, Color color) {
+  Widget _buildWeatherDetail({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
     return Column(
       children: [
-        Icon(icon, size: 32, color: color),
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 28,
+        ),
         SizedBox(height: 8),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: color.withOpacity(0.8),
-              ),
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white.withOpacity(0.9),
+          ),
         ),
       ],
     );
   }
 
+  Widget _buildSoilSelection() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 15),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.landscape,
+                color: Colors.green[800],
+                size: 28,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Soil Type',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 15),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: DropdownButton<String>(
+              value: _selectedSoilType,
+              hint: Text(
+                'Select soil type',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              isExpanded: true,
+              underline: SizedBox(),
+              icon: Icon(Icons.arrow_drop_down, color: Colors.green[800]),
+              items: ['Clay', 'Sandy', 'Loamy', 'Silty']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      color: Colors.grey[800],
+                      fontSize: 16,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedSoilType = newValue;
+                  _updateCropSuggestions();
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCropList() {
     if (_suitableCrops == null || _suitableCrops!.isEmpty) {
-      return SizedBox.shrink();
+      return Center(
+        child: Text(
+          'Select soil type to see crop suggestions',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[600],
+          ),
+        ),
+      );
     }
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.all(16),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Recommended Crops',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            SizedBox(height: 16),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: _suitableCrops!.length,
-              separatorBuilder: (context, index) => Divider(),
-              itemBuilder: (context, index) {
-                final crop = _suitableCrops![index];
-                final confidence = _confidenceScores?[crop] ?? 0.0;
-
-                return ListTile(
-                  leading: Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.grass, color: Colors.green),
-                  ),
-                  title: Text(
-                    crop,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 15),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.eco,
+                color: Colors.green[800],
+                size: 28,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Recommended Crops',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 15),
+          ...List.generate(_suitableCrops!.length, (index) {
+            final crop = _suitableCrops![index];
+            final confidence = _confidenceScores![crop];
+            return Container(
+              margin: EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.grey[200]!,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: confidence / 100,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.green,
+                      CircleAvatar(
+                        backgroundColor: Colors.green[100],
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: Colors.green[800],
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text('Confidence Score'),
+                      SizedBox(width: 15),
+                      Text(
+                        crop,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[800],
+                        ),
+                      ),
                     ],
                   ),
-                  trailing: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${confidence.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.green[800],
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  onTap: () {
-                    // TODO: Navigate to detailed crop information
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -299,65 +464,81 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.green[800],
         title: Text(
-          'CROP SELECTION',
+          'Crop Selection',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontFamily: GoogleFonts.cuteFont().fontFamily,
-            fontSize: 35,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _getCurrentLocation,
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Getting location and weather data...'),
-                ],
-              ),
-            )
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.green[800]!,
+              Colors.green[50]!,
+            ],
+            stops: [0.0, 0.2],
+          ),
+        ),
+        child: Column(
+          children: [
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Row(
                     children: [
-                      Text(
-                        _error!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: _getCurrentLocation,
-                        icon: Icon(Icons.refresh),
-                        label: Text('Retry'),
+                      Icon(Icons.error_outline, color: Colors.red),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
                       ),
                     ],
                   ),
-                )
-              : RefreshIndicator(
+                ),
+              ),
+            if (_weatherData != null)
+              Expanded(
+                child: RefreshIndicator(
                   onRefresh: _getCurrentLocation,
                   child: SingleChildScrollView(
                     physics: AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildWeatherInfo(),
+                        _buildSoilSelection(),
                         _buildCropList(),
                       ],
                     ),
                   ),
                 ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:html' as html;
 
 class DiseaseDetectionScreen extends StatefulWidget {
-  const DiseaseDetectionScreen({Key? key}) : super(key: key);
+  const DiseaseDetectionScreen({super.key});
 
   @override
   _DiseaseDetectionScreenState createState() => _DiseaseDetectionScreenState();

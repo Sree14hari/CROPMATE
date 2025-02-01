@@ -12,6 +12,8 @@ import '../widgets/aqi_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   void _showContactDialog(BuildContext context) {
     showDialog(
       context: context,

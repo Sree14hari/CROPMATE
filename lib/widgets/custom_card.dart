@@ -7,12 +7,12 @@ class CustomCard extends StatefulWidget {
   final Color color;
 
   const CustomCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.icon,
     required this.onTap,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomCard> createState() => _CustomCardState();
@@ -88,9 +88,7 @@ class _CustomCardState extends State<CustomCard>
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                if (widget.onTap != null) {
-                  widget.onTap();
-                }
+                widget.onTap();
               },
               borderRadius: BorderRadius.circular(20),
               splashColor: widget.color.withOpacity(0.1),

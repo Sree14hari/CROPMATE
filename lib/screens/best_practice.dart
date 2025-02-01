@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class BestPracticesScreen extends StatelessWidget {
+  const BestPracticesScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 
 class SoilManagementScreen extends StatefulWidget {
+  const SoilManagementScreen({super.key});
+
   @override
   _SoilManagementScreenState createState() => _SoilManagementScreenState();
 }
@@ -394,24 +396,24 @@ class _SoilManagementScreenState extends State<SoilManagementScreen> {
     int score = 0;
 
     // Check Nitrogen levels (ideal range: 140-280 mg/kg)
-    if (n >= 140 && n <= 280)
+    if (n >= 140 && n <= 280) {
       score += 2;
-    else if (n >= 100 && n <= 320) score += 1;
+    } else if (n >= 100 && n <= 320) score += 1;
 
     // Check Phosphorus levels (ideal range: 20-40 mg/kg)
-    if (p >= 20 && p <= 40)
+    if (p >= 20 && p <= 40) {
       score += 2;
-    else if (p >= 10 && p <= 50) score += 1;
+    } else if (p >= 10 && p <= 50) score += 1;
 
     // Check Potassium levels (ideal range: 180-360 mg/kg)
-    if (k >= 180 && k <= 360)
+    if (k >= 180 && k <= 360) {
       score += 2;
-    else if (k >= 120 && k <= 400) score += 1;
+    } else if (k >= 120 && k <= 400) score += 1;
 
     // Check pH levels (ideal range: 6.0-7.5)
-    if (ph >= 6.0 && ph <= 7.5)
+    if (ph >= 6.0 && ph <= 7.5) {
       score += 2;
-    else if (ph >= 5.5 && ph <= 8.0) score += 1;
+    } else if (ph >= 5.5 && ph <= 8.0) score += 1;
 
     if (score >= 7) return 'Excellent';
     if (score >= 5) return 'Good';

@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AQIWidget extends StatefulWidget {
+  const AQIWidget({super.key});
+
   @override
   _AQIWidgetState createState() => _AQIWidgetState();
 }
@@ -85,7 +87,7 @@ class _AQIWidgetState extends State<AQIWidget> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Center(child: CircularProgressIndicator()),
@@ -93,7 +95,7 @@ class _AQIWidgetState extends State<AQIWidget> {
     }
 
     if (error != null) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Icon(Icons.error_outline, size: 50, color: Colors.grey),
@@ -105,7 +107,7 @@ class _AQIWidgetState extends State<AQIWidget> {
         aqiData!['list'] == null ||
         (aqiData!['list'] as List).isEmpty ||
         aqiData!['list'][0]['main'] == null) {
-      return Container(
+      return SizedBox(
         width: 160,
         height: 180,
         child: Column(

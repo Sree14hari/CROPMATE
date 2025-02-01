@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CropPricesScreen extends StatelessWidget {
+  const CropPricesScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +47,7 @@ class CropPricesScreen extends StatelessWidget {
   }
 
   Widget _buildPriceCard(String cropName, String price) {
-    return Container(
+    return SizedBox(
       height: 80,
       child: Card(
         elevation: 5,
