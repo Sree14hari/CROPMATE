@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
                   "Select an option below to get started",
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: const Color.fromARGB(255, 88, 88, 88),
                   ),
                 ),
               ],

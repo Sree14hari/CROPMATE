@@ -9,6 +9,8 @@ import uvicorn
 from pydantic import BaseModel
 from typing import Optional
 from soil_management import SoilData, analyze_soil_health
+from crop_prediction import LocationData, predict_suitable_crops, get_weather_data
+from datetime import datetime
 
 app = FastAPI()
 
@@ -149,6 +151,21 @@ async def analyze_soil(data: SoilData):
     try:
         result = analyze_soil_health(data)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/predict_crops")
+async def predict_crops(location: LocationData):
+    try:
+        # Get current weather data
+        weather_data = get_weather_data(location.latitude, location.longitude)
+        
+        # Get current month
+        current_month = datetime.now().month
+        
+        # Predict suitable crops
+        prediction = predict_suitable_crops(weather_data, current_month)
+        return prediction
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
