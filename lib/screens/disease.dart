@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -131,8 +132,13 @@ Troubleshooting steps:
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plant Disease Detection'),
-        backgroundColor: Colors.green,
+        title: Text('PLANT DISEASE DETECTION',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 34,
+                fontFamily: GoogleFonts.cuteFont().fontFamily,
+                fontWeight: FontWeight.w600)),
+        backgroundColor: Color.fromARGB(255, 0, 104, 19),
       ),
       body: SingleChildScrollView(
         child: Column(

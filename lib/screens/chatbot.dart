@@ -234,9 +234,12 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                   SizedBox(width: 8),
                   FloatingActionButton(
                     onPressed: () => _sendMessage(_messageController.text),
-                    child: Icon(Icons.send),
                     backgroundColor: Color.fromARGB(255, 0, 104, 19),
                     mini: true,
+                    child: Icon(
+                      Icons.send,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
@@ -298,7 +299,15 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Crop Selection'),
+        title: Text(
+          'CROP SELECTION',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontFamily: GoogleFonts.cuteFont().fontFamily,
+            fontSize: 35,
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),

@@ -6,6 +6,10 @@ import 'disease.dart';
 import 'best_practice.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'chatbot.dart';
+import 'crop_prices.dart';
+import '../widgets/weather_widget.dart';
+import '../widgets/aqi_widget.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatelessWidget {
   void _showContactDialog(BuildContext context) {
@@ -67,8 +71,8 @@ class HomeScreen extends StatelessWidget {
         toolbarHeight: 100,
         title: Row(
           children: [
-            Image.asset(
-              'assets/log.png',
+            SvgPicture.asset(
+              'assets/crop.svg',
               height: 60.0,
               fit: BoxFit.contain,
             ),
@@ -86,10 +90,27 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: Icon(
+                Icons.currency_rupee,
+                color: Colors.white,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CropPricesScreen()),
+                );
+              },
+              tooltip: 'Crop Prices',
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
               icon: Icon(
-                Icons.contact_support,
+                Icons.call,
                 color: Colors.white,
                 size: 28,
               ),
@@ -116,37 +137,108 @@ class HomeScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(height: isSmallScreen ? 16 : 24),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Welcome to CropMate!",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 28 : 40,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    if (isSmallScreen) ...[
+                      // Mobile layout
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Welcome to CropMate!",
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Your one-stop solution for all farming needs",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: const Color.fromARGB(255, 22, 48, 17),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Select an option below to get started",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          "Your one-stop solution for all farming needs",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14 : 16,
-                            color: const Color.fromARGB(255, 22, 48, 17),
-                          ),
+                      ),
+                      SizedBox(height: 16),
+                      // Weather and AQI widgets in a row for mobile
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: AQIWidget(),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: WeatherWidget(),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: isSmallScreen ? 8 : 10),
-                        Text(
-                          "Select an option below to get started",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14 : 16,
-                            color: Colors.grey,
+                      ),
+                    ] else ...[
+                      // Desktop/tablet layout
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Welcome to CropMate!",
+                                  style: TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "Your one-stop solution for all farming needs",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color:
+                                        const Color.fromARGB(255, 22, 48, 17),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Select an option below to get started",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: AQIWidget(),
+                          ),
+                          SizedBox(width: 24),
+                          Padding(
+                            padding: EdgeInsets.only(right: 24),
+                            child: WeatherWidget(),
+                          ),
+                        ],
+                      ),
+                    ],
+                    SizedBox(height: isSmallScreen ? 32 : 48),
                     Padding(
                       padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                       child: GridView.builder(
@@ -179,8 +271,11 @@ class HomeScreen extends StatelessWidget {
             MaterialPageRoute(builder: (context) => ChatBotScreen()),
           );
         },
-        label: Text('Ask AI Assistant'),
-        icon: Icon(Icons.smart_toy),
+        label: Text('Ask AI Assistant', style: TextStyle(color: Colors.white)),
+        icon: Icon(
+          Icons.smart_toy,
+          color: Colors.white,
+        ),
         backgroundColor: Color.fromARGB(255, 0, 104, 19),
       ),
     );
@@ -194,6 +289,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildCard(BuildContext context, int index) {
+    Color color = Color.fromARGB(255, 255, 255, 255); // Green
     final cards = [
       {
         'title': 'Crop Selection',
