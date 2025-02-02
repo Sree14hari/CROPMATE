@@ -10,6 +10,7 @@ import 'crop_prices.dart';
 import '../widgets/weather_widget.dart';
 import '../widgets/aqi_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:math' as math;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -122,149 +123,164 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: const Color.fromARGB(238, 255, 255, 255),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            bool isSmallScreen = constraints.maxWidth < 600;
+      body: Stack(
+        children: [
+          // Background color
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: const Color.fromARGB(238, 255, 255, 255),
+          ),
+          // Falling leaves in background
+          const FallingLeaves(),
+          // Semi-transparent overlay to make leaves more subtle
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.white.withOpacity(0.8),
+          ),
+          // Main content
+          LayoutBuilder(
+            builder: (context, constraints) {
+              bool isSmallScreen = constraints.maxWidth < 600;
 
-            return SingleChildScrollView(
-              child: Container(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: isSmallScreen ? 16 : 24),
-                    if (isSmallScreen) ...[
-                      // Mobile layout
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
+              return SingleChildScrollView(
+                child: Container(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: isSmallScreen ? 16 : 24),
+                      if (isSmallScreen) ...[
+                        // Mobile layout
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Welcome to CropMate!",
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "Your one-stop solution for all farming needs",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: const Color.fromARGB(255, 22, 48, 17),
+                                ),
+                              ),
+                              // SizedBox(height: 8),
+                              // Text(
+                              //   "Select an option below to get started",
+                              //   style: TextStyle(
+                              //     fontSize: 14,
+                              //     color: Colors.grey,
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        // Weather and AQI widgets in a row for mobile
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: AQIWidget(),
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: WeatherWidget(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        // Desktop/tablet layout
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Welcome to CropMate!",
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              "Your one-stop solution for all farming needs",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: const Color.fromARGB(255, 22, 48, 17),
-                              ),
-                            ),
-                            // SizedBox(height: 8),
-                            // Text(
-                            //   "Select an option below to get started",
-                            //   style: TextStyle(
-                            //     fontSize: 14,
-                            //     color: Colors.grey,
-                            //   ),
-                            // ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      // Weather and AQI widgets in a row for mobile
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                            SizedBox(width: 24),
                             Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Welcome to CropMate!",
+                                    style: TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "Your one-stop solution for all farming needs",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color:
+                                          const Color.fromARGB(255, 22, 48, 17),
+                                    ),
+                                  ),
+                                  // SizedBox(height: 10),
+                                  // Text(
+                                  //   "Select an option below to get started",
+                                  //   style: TextStyle(
+                                  //     fontSize: 16,
+                                  //     color: Colors.grey,
+                                  //   ),
+                                  // ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
                               child: AQIWidget(),
                             ),
-                            SizedBox(width: 16),
-                            Expanded(
+                            SizedBox(width: 24),
+                            Padding(
+                              padding: EdgeInsets.only(right: 24),
                               child: WeatherWidget(),
                             ),
                           ],
                         ),
-                      ),
-                    ] else ...[
-                      // Desktop/tablet layout
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(width: 24),
-                          Expanded(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Welcome to CropMate!",
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  "Your one-stop solution for all farming needs",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color:
-                                        const Color.fromARGB(255, 22, 48, 17),
-                                  ),
-                                ),
-                                // SizedBox(height: 10),
-                                // Text(
-                                //   "Select an option below to get started",
-                                //   style: TextStyle(
-                                //     fontSize: 16,
-                                //     color: Colors.grey,
-                                //   ),
-                                // ),
-                              ],
-                            ),
+                      ],
+                      SizedBox(height: isSmallScreen ? 32 : 48),
+                      Padding(
+                        padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                _getCrossAxisCount(constraints.maxWidth),
+                            childAspectRatio: isSmallScreen ? 1.0 : 1.2,
+                            crossAxisSpacing: isSmallScreen ? 12 : 16,
+                            mainAxisSpacing: isSmallScreen ? 12 : 16,
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: AQIWidget(),
-                          ),
-                          SizedBox(width: 24),
-                          Padding(
-                            padding: EdgeInsets.only(right: 24),
-                            child: WeatherWidget(),
-                          ),
-                        ],
+                          itemCount: 4,
+                          itemBuilder: (context, index) {
+                            return _buildCard(context, index);
+                          },
+                        ),
                       ),
                     ],
-                    SizedBox(height: isSmallScreen ? 32 : 48),
-                    Padding(
-                      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount:
-                              _getCrossAxisCount(constraints.maxWidth),
-                          childAspectRatio: isSmallScreen ? 1.0 : 1.2,
-                          crossAxisSpacing: isSmallScreen ? 12 : 16,
-                          mainAxisSpacing: isSmallScreen ? 12 : 16,
-                        ),
-                        itemCount: 4,
-                        itemBuilder: (context, index) {
-                          return _buildCard(context, index);
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -328,6 +344,103 @@ class HomeScreen extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (_) => card['screen'] as Widget),
       ),
+    );
+  }
+}
+
+class FallingLeaf extends StatefulWidget {
+  final double left;
+  final double top;
+
+  const FallingLeaf({
+    Key? key,
+    required this.left,
+    required this.top,
+  }) : super(key: key);
+
+  @override
+  State<FallingLeaf> createState() => _FallingLeafState();
+}
+
+class _FallingLeafState extends State<FallingLeaf>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late double _rotationStart;
+  late double _horizontalMovement;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 5 + math.Random().nextInt(5)),
+      vsync: this,
+    );
+
+    _rotationStart = math.Random().nextDouble() * 360;
+    _horizontalMovement = (math.Random().nextDouble() - 0.5) * 200;
+
+    _controller.forward();
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.reset();
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final _endTop = MediaQuery.of(context).size.height + 50;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final progress = _controller.value;
+        final top = widget.top + (_endTop - widget.top) * progress;
+        final horizontalOffset =
+            math.sin(progress * math.pi * 2) * _horizontalMovement;
+        final rotation = _rotationStart + progress * 360;
+
+        return Positioned(
+          left: widget.left + horizontalOffset,
+          top: top,
+          child: Transform.rotate(
+            angle: rotation * math.pi / 180,
+            child: Icon(
+              Icons.eco,
+              color: Color.fromARGB(255, 0, 172, 6).withOpacity(1.0),
+              size: 40,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class FallingLeaves extends StatelessWidget {
+  const FallingLeaves({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final random = math.Random();
+
+    return Stack(
+      children: List.generate(15, (index) {
+        return FallingLeaf(
+          left: random.nextDouble() * screenWidth,
+          top: -50 - random.nextDouble() * screenHeight,
+        );
+      }),
     );
   }
 }
