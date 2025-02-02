@@ -161,10 +161,11 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Welcome to CropMate!",
+                                "Welcome to CropMate",
                                 style: TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 50,
                                   fontWeight: FontWeight.bold,
+                                  fontFamily: GoogleFonts.cuteFont().fontFamily,
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -216,17 +217,19 @@ class HomeScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Welcome to CropMate!",
+                                    "Welcome to CROPMATE",
                                     style: TextStyle(
-                                      fontSize: 40,
+                                      fontSize: 90,
                                       fontWeight: FontWeight.bold,
+                                      fontFamily:
+                                          GoogleFonts.cuteFont().fontFamily,
                                     ),
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     "Your one-stop solution for all farming needs",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 22,
                                       color:
                                           const Color.fromARGB(255, 22, 48, 17),
                                     ),

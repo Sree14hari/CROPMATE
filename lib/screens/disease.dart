@@ -144,11 +144,12 @@ Troubleshooting steps:
         child: Column(
           children: [
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'AI-Powered Plant Disease Detection',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                fontFamily: GoogleFonts.oswald().fontFamily,
               ),
             ),
             const SizedBox(height: 20),
@@ -189,8 +190,11 @@ Troubleshooting steps:
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _isAnalyzing ? null : getImage,
-              icon: const Icon(Icons.upload_file),
-              label: const Text('Upload Image'),
+              icon:
+                  const Icon(Icons.upload_file, size: 18, color: Colors.white),
+              label: const Text('Upload Image',
+                  style: TextStyle(
+                      fontSize: 18, color: Color.fromARGB(255, 255, 255, 255))),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding:
