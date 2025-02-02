@@ -161,14 +161,14 @@ class HomeScreen extends StatelessWidget {
                                 color: const Color.fromARGB(255, 22, 48, 17),
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              "Select an option below to get started",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            // SizedBox(height: 8),
+                            // Text(
+                            //   "Select an option below to get started",
+                            //   style: TextStyle(
+                            //     fontSize: 14,
+                            //     color: Colors.grey,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
@@ -217,14 +217,14 @@ class HomeScreen extends StatelessWidget {
                                         const Color.fromARGB(255, 22, 48, 17),
                                   ),
                                 ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Select an option below to get started",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                                // SizedBox(height: 10),
+                                // Text(
+                                //   "Select an option below to get started",
+                                //   style: TextStyle(
+                                //     fontSize: 16,
+                                //     color: Colors.grey,
+                                //   ),
+                                // ),
                               ],
                             ),
                           ),

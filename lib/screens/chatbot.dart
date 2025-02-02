@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -125,8 +126,13 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             Icon(Icons.smart_toy, color: Colors.white),
             SizedBox(width: 10),
             Text(
-              'CropMate AI Assistant',
-              style: TextStyle(color: Colors.white),
+              'CROP MATE AI ASSISTANT',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 35,
+                fontWeight: FontWeight.bold,
+                fontFamily: GoogleFonts.cuteFont().fontFamily,
+              ),
             ),
           ],
         ),

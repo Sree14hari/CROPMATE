@@ -112,9 +112,9 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
       // Temperature factor
       double tempC =
           double.tryParse(_weatherData!['temperature'].toString()) ?? 0;
-      if (tempC >= 20 && tempC <= 30) {
+      if (tempC >= 15 && tempC <= 25) {
         score += 40;
-      } else if (tempC >= 15 && tempC <= 35) {
+      } else if (tempC >= 10 && tempC <= 30) {
         score += 20;
       }
 
