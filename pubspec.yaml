@@ -30,23 +30,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.1.0  # Added for making HTTP requests
+  cupertino_icons: ^1.0.8
+  google_fonts: any
+  http: ^1.1.0
+  geolocator: 13.0.2
+  permission_handler: ^11.0.1
   image_picker: ^1.0.4
   image_picker_for_web: ^3.0.1
   js: ^0.7.1
-  cupertino_icons: ^1.0.8
-  geolocator: 13.0.2
-  permission_handler: ^11.0.1
-  google_fonts: any
-  google_generative_ai: 0.4.6
+  google_generative_ai: ^0.2.0
   shared_preferences: ^2.2.2
   intl: ^0.20.2
   flutter_svg: ^2.0.5
   firebase_core: 3.10.1
   firebase_auth: 5.4.1
-
-
-
+  tflite: ^1.1.2
 
 dev_dependencies:
   flutter_test:

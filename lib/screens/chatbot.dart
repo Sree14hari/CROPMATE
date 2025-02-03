@@ -12,12 +12,11 @@ class ChatBotScreen extends StatefulWidget {
 }
 
 class _ChatBotScreenState extends State<ChatBotScreen> {
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [];
-  bool _isTyping = false;
-  late GenerativeModel _model;
-  late ChatSession _chat;
+  final TextEditingController _controller = TextEditingController();
+  final List<String> messages = [];
+  bool isTyping = false;
+  late GenerativeModel model;
+  late ChatSession chat;
 
   @override
   void initState() {
@@ -27,316 +26,303 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   }
 
   void _initializeChat() {
-    // Replace with your Gemini API key
-    const apiKey = 'AIzaSyAopB_r8ZtIZ4m94sjvCKglTlnkCo-GQUw';
-    _model = GenerativeModel(
+    const apiKey =
+        'AIzaSyAjRlIFSN4LJ_xMuJdsCYOxYx99QZ46OZg'; // Replace with your API key
+    model = GenerativeModel(
       model: 'gemini-pro',
       apiKey: apiKey,
     );
-    _chat = _model.startChat(history: []);
+    chat = model.startChat();
   }
 
   Future<void> _loadChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final history = prefs.getStringList('chat_history') ?? [];
     setState(() {
-      for (int i = 0; i < history.length; i += 2) {
-        _messages.add(ChatMessage(
-          text: history[i],
-          isUser: true,
-          timestamp: DateTime.now(),
-        ));
-        if (i + 1 < history.length) {
-          _messages.add(ChatMessage(
-            text: history[i + 1],
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
-        }
-      }
+      messages.clear();
+      messages.addAll(history);
     });
   }
 
   Future<void> _saveChatHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final history = _messages.map((msg) => msg.text).toList();
-    await prefs.setStringList('chat_history', history);
+    await prefs.setStringList('chat_history', messages);
   }
 
-  Future<void> _sendMessage(String message) async {
-    if (message.trim().isEmpty) return;
+  Future<void> _sendMessage() async {
+    if (_controller.text.trim().isEmpty) return;
+
+    final userMessage = _controller.text;
+    _controller.clear();
 
     setState(() {
-      _messages.add(ChatMessage(
-        text: message,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-      _isTyping = true;
-      _messageController.clear();
+      messages.insert(0, "User: $userMessage");
+      isTyping = true;
     });
-    _scrollToBottom();
 
     try {
-      final response = await _chat.sendMessage(Content.text(message));
-      final botResponse = response.text ?? 'Sorry, I could not process that.';
+      final response = await chat.sendMessage(Content.text(userMessage));
+      final botMessage = response.text ?? 'Sorry, I could not process that.';
 
       setState(() {
-        _messages.add(ChatMessage(
-          text: botResponse,
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
+        messages.insert(0, "Bot: $botMessage");
+        isTyping = false;
       });
+
       _saveChatHistory();
-      _scrollToBottom();
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          text: 'Error: Could not get response. Please try again.',
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
+        messages.insert(
+            0, "Bot: Sorry, I encountered an error. Please try again.");
+        isTyping = false;
       });
-      _scrollToBottom();
     }
-  }
-
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 245, 250, 245),
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 0, 104, 19),
+        backgroundColor: Color.fromARGB(255, 0, 139, 62),
         title: Row(
           children: [
-            Icon(Icons.smart_toy, color: Colors.white),
-            SizedBox(width: 10),
+            Icon(Icons.smart_toy_outlined, color: Colors.white),
+            SizedBox(width: 8),
             Text(
-              'CROP MATE AI ASSISTANT',
+              'CropMate Assistant',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 35,
                 fontWeight: FontWeight.bold,
-                fontFamily: GoogleFonts.cuteFont().fontFamily,
               ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.delete_outline, color: Colors.white),
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Clear Chat History'),
-                  content:
-                      Text('Are you sure you want to clear the chat history?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: Text('Clear'),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirm == true) {
-                setState(() => _messages.clear());
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('chat_history');
-              }
-            },
-          ),
-        ],
+        elevation: 0,
       ),
-      body: Container(
-        color: Colors.grey[100],
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: EdgeInsets.all(16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  return _buildMessageBubble(message);
-                },
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen ? 8 : 16,
+                vertical: 8,
               ),
-            ),
-            if (_isTyping)
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color.fromARGB(255, 0, 104, 19),
+              child: ListView.builder(
+                reverse: true,
+                itemCount: messages.length + (isTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (isTyping && index == 0) {
+                    return _buildTypingIndicator();
+                  }
+
+                  final message = messages[isTyping ? index - 1 : index];
+                  final isUser = message.startsWith("User: ");
+
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: isUser
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!isUser) _buildBotAvatar(),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width *
+                                  (isSmallScreen ? 0.75 : 0.6),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isUser
+                                  ? Color.fromARGB(255, 0, 139, 62)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(20).copyWith(
+                                bottomLeft: isUser
+                                    ? Radius.circular(20)
+                                    : Radius.circular(0),
+                                bottomRight: isUser
+                                    ? Radius.circular(0)
+                                    : Radius.circular(20),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 5,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              message.replaceFirst(
+                                  isUser ? "User: " : "Bot: ", ""),
+                              style: TextStyle(
+                                color: isUser ? Colors.white : Colors.black87,
+                                fontSize: isSmallScreen ? 14 : 16,
                               ),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Text('Typing...'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Container(
-              padding: EdgeInsets.all(8),
-              color: Colors.white,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Ask me anything about farming...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                      ),
-                      onSubmitted: _sendMessage,
+                        SizedBox(width: 8),
+                        if (isUser) _buildUserAvatar(),
+                      ],
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  FloatingActionButton(
-                    onPressed: () => _sendMessage(_messageController.text),
-                    backgroundColor: Color.fromARGB(255, 0, 104, 19),
-                    mini: true,
-                    child: Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(ChatMessage message) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment:
-            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          if (!message.isUser)
-            CircleAvatar(
-              backgroundColor: Color.fromARGB(255, 0, 104, 19),
-              child: Icon(Icons.smart_toy, color: Colors.white, size: 20),
-            ),
-          SizedBox(width: 8),
-          Flexible(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: message.isUser
-                    ? Color.fromARGB(255, 0, 104, 19)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      color: message.isUser ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    DateFormat('HH:mm').format(message.timestamp),
-                    style: TextStyle(
-                      color: message.isUser
-                          ? Colors.white.withOpacity(0.7)
-                          : Colors.black54,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
-          SizedBox(width: 8),
-          if (message.isUser)
-            CircleAvatar(
-              backgroundColor: Color.fromARGB(255, 0, 104, 19),
-              child: Icon(Icons.person, color: Colors.white, size: 20),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: Offset(0, -2),
+                ),
+              ],
             ),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 16).copyWith(
+              bottom: MediaQuery.of(context).padding.bottom +
+                  (isSmallScreen ? 8 : 16),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              hintText: 'Ask me anything about farming...',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 14 : 16,
+                            ),
+                            onSubmitted: (_) => _sendMessage(),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.mic, color: Colors.grey),
+                          onPressed: () {
+                            // TODO: Implement voice input
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 0, 139, 62),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(255, 0, 139, 62).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.send_rounded, color: Colors.white),
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  Widget _buildTypingIndicator() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          _buildBotAvatar(),
+          SizedBox(width: 8),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20).copyWith(
+                bottomLeft: Radius.circular(0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Color.fromARGB(255, 0, 139, 62),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Typing...',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
-}
 
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
+  Widget _buildBotAvatar() {
+    return CircleAvatar(
+      backgroundColor: Color.fromARGB(255, 0, 139, 62),
+      child: Icon(
+        Icons.smart_toy,
+        color: Colors.white,
+        size: 18,
+      ),
+    );
+  }
 
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
+  Widget _buildUserAvatar() {
+    return CircleAvatar(
+      backgroundColor: Color.fromARGB(255, 0, 139, 62),
+      child: Icon(
+        Icons.person,
+        color: Colors.white,
+        size: 18,
+      ),
+    );
+  }
 }
