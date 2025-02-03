@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../constants.dart';
 
 class CropSelectionScreen extends StatefulWidget {
   const CropSelectionScreen({super.key});
@@ -70,7 +71,7 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
   Future<void> _getPredictions(double latitude, double longitude) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/predict_crops'),
+        Uri.parse(ApiConstants.baseUrl + ApiConstants.cropsEndpoint),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'latitude': latitude,

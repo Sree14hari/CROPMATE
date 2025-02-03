@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.email, color: Color(0xFF4CAF50)),
                 title: Text('Email'),
-                subtitle: Text('support@cropmate.com'),
+                subtitle: Text('sreehari14shr@gmail.com'),
               ),
               ListTile(
                 leading: Icon(Icons.phone, color: Color(0xFF4CAF50)),

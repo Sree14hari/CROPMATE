@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'dart:html' as html;
+import '../constants.dart';
 
 class DiseaseDetectionScreen extends StatefulWidget {
   const DiseaseDetectionScreen({super.key});
@@ -20,7 +21,6 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
   final picker = ImagePicker();
   String _result = '';
   bool _isAnalyzing = false;
-  final String _backendUrl = 'http://localhost:8000'; // Python backend URL
 
   Future<void> getImage() async {
     try {
@@ -73,7 +73,7 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
       // Send to Python backend
       final response = await http
           .post(
-            Uri.parse('$_backendUrl/predict_base64'),
+            Uri.parse(ApiConstants.baseUrl + ApiConstants.predictEndpoint),
             headers: {
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*',
